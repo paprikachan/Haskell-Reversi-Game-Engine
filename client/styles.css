@@ -1,0 +1,67 @@
+:not(canvas) {
+	font-family:Courier;
+	font-size: 98%;
+ 	color: #ffffff;
+  	background: #000000;
+}
+
+button,#simulation,#depth{
+	color: #000000;
+	background-color: #ffffff;
+}
+
+body{
+	background-color: white;
+}
+canvas{
+	border:	1px solid black;
+	background-color: green;
+}
+
+#pOptionTitle{
+	position: absolute;
+	left: 100px;
+	top: 100px;
+}
+#devOption{
+	position: absolute;
+	left: 100px;
+	top: 150px;
+}
+
+#pBoardTitle{
+	position: absolute;
+	left: 400px;
+	top: 100px;
+}
+
+#pCount{
+	position: absolute;
+	left: 550px;
+	top: 550px;
+}
+
+#devBoard{
+	position: absolute;
+	left: 400px;
+	top: 150px;
+}
+
+#pLogTitle{
+	position: absolute;
+	left: 950px;
+	top: 100px;
+}
+
+#taLog{
+	position: absolute;
+	left: 950px;
+	top: 150px;
+	overflow: scroll;
+	width:350px;
+	height:400px;
+	font-size: 80%;
+}
+#simulation,#depth{
+	width: 20px;
+}
