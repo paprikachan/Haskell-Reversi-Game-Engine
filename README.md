@@ -10,8 +10,8 @@ Support AI techniques:
 Alpha-Beta, Alpha-Beta Pruning, Greedy Algorithm, Monte Carlo Simulation.
 
 
--Running
-
+Running
+--------------
 run ghci Server.hs to compile
 
 run server
