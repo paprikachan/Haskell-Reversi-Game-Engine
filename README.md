@@ -1,7 +1,7 @@
 Haskell-Reversi-Game-Engine
 ===========================
 
-A Reversi Game Engine contains a HTTP Server(Haskell) and a Web Client(JavaScript).
+A Reversi Game Engine contains a HTTP Server(Haskell Yesod Framework) and a Web Client(JavaScript).
 
 Support human player;
 
@@ -10,9 +10,8 @@ Support AI techniques:
 Alpha-Beta, Alpha-Beta Pruning, Greedy Algorithm, Monte Carlo Simulation.
 
 
----------------------------
-Running
----------------------------
+-Running
+
 run ghci Server.hs to compile
 
 run server
