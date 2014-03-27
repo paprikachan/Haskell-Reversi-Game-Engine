@@ -102,9 +102,6 @@ simulate p b = if isEnd p b || length (nextValidBoards p b) == 0 then do
 	g <- liftIO $ readIORef gen
 	(r, g') <- return $ randomR (0, length vBoards-1) g
 	setGen g'
-	--liftIO $ print "Boards"
-	--liftIO $ print $ length vBoards
-	--liftIO $ print $ r
 	if length vBoards == 0 then return $ returnInfo iPlayer b
 	else simulate (reversePlayer p) (vBoards !! r)
 

@@ -1,12 +1,13 @@
 /               								RootR           		GET
 /client       									ClientR         		Static getClient
 
-/game/new/#String								NewR  					POST
-/game/validmove/#String							MoveR 					POST
-/game/aiplay/greedy/minimax/#String				GreedyMiniMaxR 			POST
-/game/aiplay/greedy/alphabeta/#String			GreedyAlphaBetaR 		POST
-/game/aiplay/positional/minimax/#String			PositionalMiniMaxR 		POST
-/game/aiplay/positional/alphabeta/#String		PositionalAlphaBetaR 	POST
-/game/aiplay/montecarlo/#String					MonteCarloR 			POST
-/game											GameR					GET
-/game/end										EndR					DELETE
+/player/pvp/#String										PlayerPPR				POST
+/player/pvc/#String										PlayerPCR				POST
+/game/#Int/validmove/#String							MoveR 					POST
+/game/#Int/aiplay/greedy/minimax/#String				GreedyMiniMaxR 			POST
+/game/#Int/aiplay/greedy/alphabeta/#String				GreedyAlphaBetaR 		POST
+/game/#Int/aiplay/positional/minimax/#String			PositionalMiniMaxR 		POST
+/game/#Int/aiplay/positional/alphabeta/#String			PositionalAlphaBetaR 	POST
+/game/#Int/aiplay/montecarlo/#String					MonteCarloR 			POST
+/game/#Int/get											GameR					GET
+/game/#Int/end											EndR					DELETE

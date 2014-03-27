@@ -119,7 +119,7 @@ function toJSON(board,move,player){
 
 
 function updateBoardTitle(player,error,count,end){
-  if(end[0] != 'f'){
+  if(end[0] == 't'){
     gameEnd(count);
     return
   }
@@ -131,7 +131,7 @@ function updateBoardTitle(player,error,count,end){
     splayer = "White";
   $("#pBoardTitle").text(error+" Now, "+splayer+"'s turn!");
   //update count
-  $("#pCount").text("Blacks: "+count[0]+", Whites: "+count[1] + " " );
+  $("#pCount").text("Blacks: "+count[0]+", Whites: "+count[1] + " " + end);
 }
 
 function updateLogger(ini,player,move,board,moves){

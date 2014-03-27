@@ -24,8 +24,9 @@ import Data.IORef
 
 -- declare instance in Yesod
 instance ToJSON GameJSON where
-    toJSON (GameJSON jplayer jmove jboard jcount jend jerror jmoves jlboards) =
-            object  [ "player"  .= jplayer
+    toJSON (GameJSON jid jplayer jmove jboard jcount jend jerror jmoves jlboards jcolor) =
+            object  ["id"       .= jid 
+                    ,"player"   .= jplayer
                     , "move"    .= jmove
                     , "board"   .= jboard
                     , "count"   .= jcount
@@ -33,6 +34,7 @@ instance ToJSON GameJSON where
                     , "serror"  .= jerror
                     , "moves"   .= jmoves
                     , "lboard"  .= jlboards
+                    , "color"   .= jcolor
                     ]
 
 --Function for debugging purposes
@@ -46,110 +48,160 @@ getRootR = do
     defaultLayout [whamlet|<p>Server root.|]
 
 
--- initialise new game
-postNewR :: String -> Handler Value
-postNewR s = do
-    newGame <- lift $ return $ initialGame
-    saveReturnGame newGame ""
-
-postMoveR :: String -> Handler Value
-postMoveR sMove = do
-    lift $ writeLog ("Recieved Request -- "++sMove)
+postPlayerPPR :: String -> Handler Value
+postPlayerPPR pUserName = do
     GameServer {..} <- getYesod
-    originalGame <- lift $ readIORef $ getGame 
+    waitId <- lift $ readIORef waitIdRef
+    if waitId == (-1) then do
+    id <- assignId
+    lift $ writeLog ("New game " ++ show id ++ ", first player is in.")
+    liftIO $ atomicModifyIORef waitIdRef $ \waitId -> (id, id)
+    newGame <- lift $ return $ initialGame id
+    newGameIORef <- lift $ newIORef newGame
+    liftIO $ atomicModifyIORef gamesRef $ \games -> (setGames id newGameIORef games, setGames id newGameIORef games)
+    returnJson $ game2GameJSON newGame "" "" "b"
+    else do
+    lift $ writeLog ("New game " ++ show waitId ++ ", second player is in.")
+    liftIO $ atomicModifyIORef waitIdRef $ \waitId -> (-1, -1)
+    games <- lift $ readIORef $ gamesRef
+    game <- lift $ readIORef $ games !! waitId
+    returnJson $ game2GameJSON game "" "" "w"
+
+postPlayerPCR :: String -> Handler Value
+postPlayerPCR color = do
+    GameServer {..} <- getYesod
+    id <- assignId
+    lift $ writeLog ("New game " ++ show id)
+    newGame <- lift $ return $ initialGame id
+    newGameIORef <- lift $ newIORef newGame
+    liftIO $ atomicModifyIORef gamesRef $ \games -> (setGames id newGameIORef games, setGames id newGameIORef games)
+    returnJson $ game2GameJSON newGame "" "" color
+
+
+
+setGames :: Int -> IORef Game -> [IORef Game] -> [IORef Game]
+setGames 0 g [] = [g]
+setGames 0 g (x:xs) = g:xs
+setGames n g (x:xs) = x:(setGames (n-1) g xs) 
+setGames _ _ _ = error "Wrong game id"
+
+{-
+
+-}
+
+
+postMoveR :: Int -> String -> Handler Value
+postMoveR id sMove = do
+    lift $ writeLog ("Game " ++ show id ++ " Recieved Request -- "++sMove)
+    GameServer {..} <- getYesod
+    games <- lift $ readIORef $ gamesRef
+    originalGame <- lift $ readIORef $ games !! id
     lift $ print move
-    newGame <-  lift $ return $ Game (Parser.player originalGame) move (board originalGame) (mcTree originalGame)
+    newGame <-  lift $ return $ Game id (Parser.player originalGame) move (board originalGame) (mcTree originalGame) True
     case validMoveGame newGame of
-        Just game ->  saveReturnGame game ""
-        Nothing -> returnJson $ game2GameJSON originalGame "" ("Invalid Move: "++sMove)
+        Just game ->  saveReturnGame id game "" ""
+        Nothing -> returnJson $ game2GameJSON originalGame "" ("Game " ++ show id ++ " Invalid Move: "++sMove) ""
     where
         move = str2Move sMove
 
-postGreedyMiniMaxR :: String -> Handler Value
-postGreedyMiniMaxR sDepth = do
-    lift $ writeLog ("GreedyMinimax Play")
-    aiPlay (read sDepth::Int) GreedyMinimax 
+postGreedyMiniMaxR :: Int -> String -> Handler Value
+postGreedyMiniMaxR id sDepth = do
+    lift $ writeLog ("Game " ++ show id ++ " GreedyMinimax Play")
+    aiPlay id (read sDepth::Int) GreedyMinimax 
 
-postGreedyAlphaBetaR :: String -> Handler Value
-postGreedyAlphaBetaR sDepth = do
-    lift $ writeLog ("GreedyAlphaBeta Play")
-    aiPlay (read sDepth::Int) GreedyAlphaBeta 
+postGreedyAlphaBetaR :: Int -> String -> Handler Value
+postGreedyAlphaBetaR id sDepth = do
+    lift $ writeLog ("Game " ++ show id ++ " GreedyAlphaBeta Play")
+    aiPlay id (read sDepth::Int) GreedyAlphaBeta 
 
-postPositionalMiniMaxR :: String -> Handler Value
-postPositionalMiniMaxR sDepth = do
-    lift $ writeLog ("PositionalMinimax Play")
-    aiPlay (read sDepth::Int) PositionalMinimax 
+postPositionalMiniMaxR :: Int -> String -> Handler Value
+postPositionalMiniMaxR id sDepth = do
+    lift $ writeLog ("Game " ++ show id ++ " PositionalMinimax Play")
+    aiPlay id (read sDepth::Int) PositionalMinimax 
 
-postPositionalAlphaBetaR :: String -> Handler Value
-postPositionalAlphaBetaR sDepth = do
-    lift $ writeLog ("PositionalAlphaBeta Play")
-    aiPlay (read sDepth::Int) PositionalAlphaBeta 
+postPositionalAlphaBetaR :: Int -> String -> Handler Value
+postPositionalAlphaBetaR id sDepth = do
+    lift $ writeLog ("Game " ++ show id ++ " PositionalAlphaBeta Play")
+    aiPlay id (read sDepth::Int) PositionalAlphaBeta 
 
-postMonteCarloR :: String -> Handler Value
-postMonteCarloR sSimulate = do
-    lift $ writeLog ("MonteCarlo Play")
+postMonteCarloR :: Int -> String -> Handler Value
+postMonteCarloR id sSimulate = do
+    lift $ writeLog ("Game " ++ show id ++ " MonteCarlo Play")
     --aiPlay MonteCarlo 
     GameServer {..} <- getYesod
-    currentGame <- lift $ readIORef $ getGame
+    games <- lift $ readIORef $ gamesRef
+    currentGame <- lift $ readIORef $ games !! id
     case subMCTree (board currentGame) (mcTree currentGame) of
         Just tree -> do
-            liftIO $ atomicModifyIORef getGame $ \_ -> (setTree tree currentGame, setTree tree currentGame)
+            liftIO $ atomicModifyIORef (games !! id) $ \_ -> (setTree tree currentGame, setTree tree currentGame)
         _ -> do
-            liftIO $ atomicModifyIORef getGame $ \_ -> (iniGameTree currentGame, iniGameTree currentGame)
-    newGame <- lift $ readIORef $ getGame
+            liftIO $ atomicModifyIORef (games !! id) $ \_ -> (iniGameTree currentGame, iniGameTree currentGame)
+    newGame <- lift $ readIORef $ games !! id
     game <- lift $ mcPlay (read sSimulate::Int) newGame
-    saveReturnGame game ""
+    saveReturnGame id game "" ""
 
 mcPlay :: Int -> Game -> IO Game
-mcPlay simulate (Game p m b t) = if b /= getBoard t then do
-    error "Wrong MCTree"
+mcPlay simulate (Game id p m b t _) = if b /= getBoard t then do
+    error ("Game " ++ show id ++ " Wrong MCTree")
     else do
     tree <- monteCarloMove simulate p b t
-    return $ Game (reversePlayer p) m (getBoard tree) tree 
+    return $ Game id (reversePlayer p) m (getBoard tree) tree True
 
-getGameR :: Handler Value
-getGameR = do
+getGameR :: Int -> Handler Value
+getGameR id = do
     GameServer {..} <- getYesod
-    game <- lift $ readIORef $ getGame
-    returnJson $ game2GameJSON game "" ""
+    games <- lift $ readIORef $ gamesRef
+    game <- lift $ readIORef $ games !! id
+    returnJson $ game2GameJSON game "" "" ""
 
 
-deleteEndR :: Handler Value
+deleteEndR :: Int -> Handler Value
 deleteEndR = undefined
 
 
 
-aiPlay :: Int -> AI -> Handler Value
-aiPlay depth ai = do
+aiPlay :: Int -> Int -> AI -> Handler Value
+aiPlay id depth ai = do
     GameServer {..} <- getYesod
-    (Game p m b t) <- lift $ readIORef $ getGame
-    maybeGame <- return $ playAIGame depth ai (Game p m b t)
+    games <- lift $ readIORef $ gamesRef
+    (Game id p m b t _) <- lift $ readIORef $ games !! id
+    maybeGame <- return $ playAIGame depth ai (Game id p m b t True)
     case maybeGame of 
-        (Just game) -> saveReturnGame game ""
-        Nothing -> saveReturnGame (Game (reversePlayer p) m b t) "No valid move, change player."
+        (Just game) -> saveReturnGame id game "" ""
+        Nothing -> saveReturnGame id (Game id (reversePlayer p) m b t True) ("Game " ++ show id ++ " No valid move, change player.") ""
 
 
 
-saveReturnGame :: Game -> String -> Handler Value
-saveReturnGame game serror = do 
+saveReturnGame :: Int -> Game -> String -> String -> Handler Value
+saveReturnGame id game serror scolor= do 
     GameServer {..} <- getYesod
     lift $ print "Return"
-    liftIO $ atomicModifyIORef getGame $ \_ -> (game, game)
-    (Game p m b _) <- lift $ return $ game
+    games <- lift $ readIORef $ gamesRef
+    liftIO $ atomicModifyIORef (games !! id) $ \_ -> (game, game)
+    (Game _ p m b _ _) <- lift $ return $ game
     lift $ print p
     lift $ putStrLn $ showBoard b
     -- check game end
     if isEndGame game then do
     t <- lift $ return "t"
     lift $ putStrLn t
-    returnJson $ game2GameJSON game t serror
+    returnJson $ game2GameJSON game t serror scolor
     else do
     f <- lift $ return "f"
     lift $ putStrLn f    
-    returnJson $ game2GameJSON game f serror
+    returnJson $ game2GameJSON game f serror scolor
 
 
-
+assignId :: Handler Int
+assignId = do
+    GameServer {..} <- getYesod
+    endIds <- lift $ readIORef endIdsRef
+    if endIds == [] then do
+    liftIO $ atomicModifyIORef currentIdRef $ \id -> (id+1,id+1)
+    lift $ readIORef currentIdRef
+    else do
+    liftIO $ atomicModifyIORef endIdsRef $ \xs -> (Prelude.tail xs, Prelude.tail xs)
+    return $ Prelude.head endIds
 
 
 

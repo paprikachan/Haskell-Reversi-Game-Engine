@@ -162,3 +162,17 @@ run = do
 				++ "Enter B (black) or W (white):")
 		cn <- getLine
 		initialGame cn 
+
+
+
+		var ai = jQuery('input[name=AI]:checked').val();
+    if(ai == 'mc'){
+      var simulation = document.getElementById('simulation').value;
+      post = "/game/"+id+"/aiplay/montecarlo/"+simulation;
+    }
+    if(ai == "tr"){
+      var evaluation = jQuery( 'input[name=evaluation]:checked' ).val();
+      var search = jQuery('input[name=search]:checked').val();
+      var depth = document.getElementById('depth').value;
+      post = "/game/"+id+"/aiplay/"+evaluation+"/"+search+"/"+depth;
+    }

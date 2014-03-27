@@ -9,14 +9,13 @@ module Server where
  -}
 import Yesod          --The webserver framework we'll use
 import Yesod.Static
+import Data.IORef
 
 import Foundation     --Import the underlying site data structures
 import RouteHandlers  --Import the sites route handlers
 
-import Data.IORef
-import Board
-import MCTS
-import Runner
+
+
 
 --Tie together the site
 mkYesodDispatch "GameServer" resourcesGameServer
@@ -24,5 +23,11 @@ mkYesodDispatch "GameServer" resourcesGameServer
 --Entry point
 server = do
     client@(Static settings) <- static "client"
-    gameRef <- newIORef initialGame
-    warp 3000 $ GameServer client gameRef
+    idRef <- newIORef (-1)
+    endRef <- newIORef []
+    gamesRef <- newIORef []
+    numRef <- newIORef 0
+    waitIdRef <- newIORef (-1)
+    warp 3000 $ GameServer client idRef endRef gamesRef numRef waitIdRef
+
+

@@ -18,7 +18,8 @@ import qualified Data.ByteString.Lazy.Char8 as B
 
 -- | Type of each JSON entry in record syntax.
 data GameJSON =
-  GameJSON { 	jplayer :: String
+  GameJSON { 	jid     :: String
+            ,   jplayer :: String
   		 	,	jmove 	:: String
          	, 	jboard  :: String
          	,	jcount	:: String
@@ -26,17 +27,20 @@ data GameJSON =
          	,	jerror	:: String 
          	, 	jmoves	:: String
          	,	jlboards:: String
+            ,   jcolor  :: String
            	} deriving (Show)
 
 data Game = 
-	Game{	player 	:: Player 
+	Game{	id      :: Int
+        ,   player 	:: Player 
 		, 	move 	:: (Int, Int)
 		,	board 	:: Board
         ,   mcTree  :: MCT
+        ,   end     :: Bool
 		} --deriving Show
 
-game2GameJSON :: Game -> String -> String -> GameJSON
-game2GameJSON (Game p m b _) end err = GameJSON (player2J p) (move2S m) (board2B b) (countString b) end err (moves2J (nextMoves p b)) (showBoard b)
+game2GameJSON :: Game -> String -> String -> String -> GameJSON
+game2GameJSON (Game id p m b _ _) end err color = GameJSON (show id) (player2J p) (move2S m) (board2B b) (countString b) end err (moves2J (nextMoves p b)) (showBoard b) color
 
 player2J :: Player -> String
 player2J Black = "b"

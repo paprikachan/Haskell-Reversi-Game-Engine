@@ -10,9 +10,7 @@ button,#simulation,#depth{
 	background-color: #ffffff;
 }
 
-body{
-	background-color: white;
-}
+
 canvas{
 	border:	1px solid black;
 	background-color: green;
@@ -64,4 +62,11 @@ canvas{
 }
 #simulation,#depth{
 	width: 20px;
+}
+
+#auth{
+	position:fixed;
+    bottom:10px;
+    left:50%;
+    margin-left:-50px; /*negative half the width */
 }

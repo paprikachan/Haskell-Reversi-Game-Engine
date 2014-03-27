@@ -20,7 +20,11 @@ import Parser
 staticFiles "client"
 data GameServer = GameServer {	
 	getClient :: Static,
-	getGame :: IORef Game
+	currentIdRef :: IORef Int,
+	endIdsRef :: IORef [Int],
+	gamesRef :: IORef [IORef Game],
+	numRef :: IORef Int,
+	waitIdRef :: IORef Int
 	}
 
 --Generate routing map from file
