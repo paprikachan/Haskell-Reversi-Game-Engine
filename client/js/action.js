@@ -3,22 +3,29 @@
   var color = "";
   var pvc = false;
   var test = false;
+  var end = false;
+
 function action(){
 
 
   // Action event for button "New Game"
   $("#newGameButton").click(function(){
           test = true;
+                    
           $.post("/player/pvc/b",
             function(data,status){
              color = data.player;
              id = data.id;
-             
+             end = data.end;
                     newBoard();
                     update(true,data);
             });
+
           });
   $("#MCButton").click(function(){
+          if(end == true){
+            return
+          }
           var simulation = document.getElementById('simulation').value;
           $.post("/game/"+id+"/aiplay/montecarlo/"+simulation,
             function(data,status){
@@ -28,6 +35,9 @@ function action(){
             });
           });
   $("#AIButton").click(function(){
+    if(end == true){
+            return
+          }
     var evaluation = jQuery( 'input[name=evaluation]:checked' ).val();
     var search = jQuery('input[name=search]:checked').val();
     var depth = document.getElementById('depth').value;
@@ -41,6 +51,9 @@ function action(){
             });
           });
   $("canvas").click(function(){
+    if(end == true){
+            return
+          }
     if(test){
       color = currentData.player;
     }
@@ -64,10 +77,30 @@ function action(){
     }
   });
   $("canvas").mouseenter(function(){
+    if(end == true){
+            return
+          }
     updateBoardS("on",currentData.board,currentData.moves,currentData.player);
   });
   $("canvas").mouseleave(function(){
+    if(end == true){
+            return
+          }
     updateBoardS("off",currentData.board,currentData.moves,currentData.player);
+  });
+
+  $("#endButton").click(function(){
+    if(end == true){
+            return
+          }
+    $.post("/game/"+id+"/end",
+      function(data,status){
+        end = data.end;
+        //id = -1;
+        //color = '';
+        $("#gameIdP").text("Game "+id);
+        $("#playerP").text("You are "+scolor+", you ended game.");
+      });
   });
 
 
@@ -77,6 +110,7 @@ function action(){
       function(data,status){
         color = data.color;
         id = data.id;
+        end = data.end;
         //alert(id);
         newBoard();
         update(true,data);
@@ -84,7 +118,8 @@ function action(){
         if(color == 'b'){
           scolor = "Black";
         }
-        $("#idP").text("You are "+scolor+".");
+        $("#gameIdP").text("Game "+id);
+        $("#playerP").text("You are "+scolor+".");
       });
   });
   $("#playButton").click(function(){
@@ -93,6 +128,7 @@ function action(){
       function(data,status){
         color = data.color;
         id = data.id;
+        end = data.end;
         //alert(id);
         newBoard();
         update(true,data);
@@ -100,7 +136,26 @@ function action(){
         if(color == 'b'){
           scolor = "Black";
         }
-        $("#idP").text("You are "+scolor+".");
+        $("#gameIdP").text("Game "+id);
+        $("#playerP").text("You are "+scolor+".");
+      });
+  });
+
+  $("#signInButton").click(function(){
+    pvc = true;
+    $.post("/player/pvc/b",
+      function(data,status){
+        color = data.color;
+        id = data.id;
+        end = data.end;
+        //alert(id);
+        newBoard();
+        update(true,data);
+        scolor = "White";
+        if(color == 'b'){
+          scolor = "Black";
+        }
+        $("#playerP").text("You are "+scolor+".");
       });
   });
 } 
@@ -121,8 +176,8 @@ function update(ini,data){
   currentData = data;
   updateBoardS("on",data.board,data.moves,data.player);
   //change the board title
-  updateBoardTitle(data.player,data.serror,data.count,data.end);
+  updateBoardTitle(data.player,data.error,data.count,data.end,data.id);
   //update Game Logger
-  updateLogger(ini,data.player,data.move,data.lboard,data.moves);
+  updateLogger(ini,data.player,data.move,data.logger,data.moves);
 }
 

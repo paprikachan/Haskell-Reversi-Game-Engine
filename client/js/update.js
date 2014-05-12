@@ -105,7 +105,7 @@ function changePlayer(player){
 }
 
 
-  
+  /*
 function toJSON(board,move,player){
 //string = "{\"board\":\"eeeeeeee,eeeeeeee,eeeeeeee,eeebweee,eeewbeee,eeeeeeee,eeeeeeee,eeeeeeee\",\"move\":\"tile65\",\"player\":\"w\"}"
   // add board
@@ -115,13 +115,23 @@ function toJSON(board,move,player){
   // add player
   s += "\",\"player\":\"" + player + "\"}"
   return s;
-}
+}*/
 
 
-function updateBoardTitle(player,error,count,end){
-  if(end[0] == 't'){
-    gameEnd(count);
+function updateBoardTitle(player,error,count,end,id){
+  
+  if(end == true){
+    if(count[0]>count[1]){
+      gameEnd('b')
+    }
+    if(count[0]<count[1]){
+      gameEnd('w')
+    }
+    //update count
+    $("#pCount").text("Blacks: "+count[0]+", Whites: "+count[1]);
     return
+  }else{
+
   }
 
   splayer = "";
@@ -131,7 +141,7 @@ function updateBoardTitle(player,error,count,end){
     splayer = "White";
   $("#pBoardTitle").text(error+" Now, "+splayer+"'s turn!");
   //update count
-  $("#pCount").text("Blacks: "+count[0]+", Whites: "+count[1] + " " + end);
+  $("#pCount").text("Blacks: "+count[0]+", Whites: "+count[1] + " ");
 }
 
 function updateLogger(ini,player,move,board,moves){
@@ -141,9 +151,9 @@ function updateLogger(ini,player,move,board,moves){
   if(!ini){
     splayer = "";
     if(player == "b")
-      splayer = "\nBlack";
-    if(player == "w")
       splayer = "\nWhite";
+    if(player == "w")
+      splayer = "\nBlack";
     $("#taLog").append("\n-------------------------------------------"+splayer+" play at ");
   }
   //append Move
@@ -168,15 +178,14 @@ function makeBoard(board){
   return sBoard;
 }
 
-function gameEnd(scount){
-  w = scount[2];
-  if(w == "b"){
+function gameEnd(w){
+  if(w == 'b'){
     $("#pBoardTitle").text("Game End, Black Wins!");
   }
-  if(w == "w"){
+  if(w == 'w'){
     $("#pBoardTitle").text("Game End, White Wins!");
   }  
-  if(w == "d"){
+  if(w == 'd'){
     $("#pBoardTitle").text("Game End, Leads a Draw!");
   }
 }

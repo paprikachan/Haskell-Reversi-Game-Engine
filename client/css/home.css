@@ -1,0 +1,25 @@
+
+
+#title{
+	text-align: center;
+	font-size: 40px;
+}
+
+#link{
+	display: block;
+	text-align: center;
+	font-size: 18px;
+}
+
+img{
+	display: block;
+	margin-left:auto;
+	margin-right:auto;
+	width: 350px;
+	height:350px;
+}
+
+#welcome{
+	text-align: center;
+	font-size: 30px;
+}

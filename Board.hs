@@ -7,45 +7,79 @@ import Data.List
 -- Data declaration
 ---------------------------------------
 
-type Pos = (Int,Int)
+-- Board: consists of Tiles, PositionRing, and Count
+data Board = B Tiles PositionRing Count Move deriving Show
 
+{-	Tiles: an array of tiles in board. 
+	Use Data.Array to present this data structure.
+	Position presents the tile index.
+	Tile presents the related tile occupied statust.
+-}
+type Tiles = Array Position Tile
+
+{-	Position: tile position in board.
+ 	The first integer ranges from 0 to 7, presenting the column index.
+	The second integer ranges from 0 to 7, presenting the row index. -}
+type Position = (Int,Int)
+
+{-	Tile: current tile occupied status.
+	Black for black piece in tile.
+	White for white piece in tile.
+	Blank for no piece in tile.
+-}
 data Tile = Black | Blank | White deriving (Show, Eq)
 
-type BArray = Array Pos Tile
+{-	PositionRing: an array of position pairs.
+	Detail explanation is in dissertation Implementation chapter. -}
+type PositionRing = [(Position,Position)]
 
-data Board = B BArray PosRing Count deriving Show
-
-instance Eq Board where
-	B b1 posRing1 count1 == B b2 posRing2 count2 = b1 == b2 && posRing1 == posRing2 && count1 == count2
-
-unequal :: Board -> Board -> Bool
-unequal (B b1 pr1 c1) (B b2 pr2 c2) = b1 /= b2 || pr1 /= pr2 || c1 /= c2 
-
--- PosRing: the pos is around position, the snd pos is related tile pos
-type PosRing = [(Pos,Pos)]
-
-type Player = Tile
-type Move = Pos
-type Dir = (Int,Int)
-
--- number of black tiles in board; number of white tiles in board
+{- 	Count: 
+	The first integer is the number of black tiles in board.
+	The second integer is the number of white tiles in board. -}
 type Count = (Int,Int)
 
-countString :: Board -> String
-countString (B _ _ (x,y)) 
-	| x > y = show x ++ show y ++ "b"
-	| x < y = show x ++ show y ++ "w"
-	| otherwise = show x ++ show y ++ "d"
+{- Move: the move leads to current board, (-1,-1) for initial board. -}
+type Move = Position
+
+-- Instance Declaration -- 
+
+instance Eq Board where
+	B b1 posRing1 count1 move1 == B b2 posRing2 count2 move2 = b1 == b2 && posRing1 == posRing2 && count1 == count2 -- && move1 == move2
+
+unequal :: Board -> Board -> Bool
+unequal (B b1 pr1 c1 _) (B b2 pr2 c2 _) = b1 /= b2 || pr1 /= pr2 || c1 /= c2 
+-- ?
+
+getCount :: Board -> Count
+getCount (B _ _ c _) = c
+{-}	| x > y = show x ++ "/" ++ show y ++ "/b"
+	| x < y = show x ++ "/" ++ show y ++ "/w"
+	| otherwise = show x ++ "/" ++ show y ++ "/d"
+-}
+getMove :: Board -> Move
+getMove (B _ _ _ m) = m
 
 ----------------------------------------------------------------------
---Initialization
+--Initialization Board 
 ----------------------------------------------------------------------
 
 -- specify the size for standard 8x8 board
 size	:: Int
 size 	= 8
 
-board :: [(Pos,Tile)]
+blankTiles :: [(Position,Tile)]
+blankTiles = [ (i,Blank) | i <- range ((0,0),(size-1,size-1)) ]
+
+blankTilesArray = array ((0,0),(size-1,size-1)) blankTiles
+
+initialTiles = array4  
+	where
+		array1 = blankTilesArray // [((3,3), White)] 	-- insert White in position (3,3)
+		array2 = array1 // [((3,4), Black)]				-- insert Black in position (3,4)
+		array3 = array2 // [((4,3), Black)]				-- insert Black in position (4,3)
+		array4 = array3 // [((4,4), White)]				-- insert White in position (4,4)
+
+board :: [(Position,Tile)]
 board =	[ (i,Blank) | i <- range ((0,0),(2,7)) ] ++ 
 		[ (i,Blank) | i <- range ((3,0),(3,2)) ] ++
 		[ ((3,3),White), ((3,4),Black) ] ++
@@ -55,8 +89,13 @@ board =	[ (i,Blank) | i <- range ((0,0),(2,7)) ] ++
 		[ (i,Blank) | i <- range ((4,5),(4,7)) ] ++
 		[ (i,Blank) | i <- range ((5,0),(7,7)) ]
 
-initialPosRing :: PosRing -- calcalating is too much, assign the values first
-initialPosRing = ((2,2),(3,3)):
+initialPositionRing :: PositionRing -- calcalating is too much, assign the values first
+initialPositionRing =	((2,4),(3,3)):((2,3),(3,3)):((2,2),(3,3)):((3,2),(3,3)):((4,2),(3,3)):
+						((3,2),(4,3)):((4,2),(4,3)):((5,2),(4,3)):((5,3),(4,3)):((5,4),(4,3)):
+						((3,5),(4,4)):((4,5),(4,4)):((5,5),(4,4)):((5,4),(4,4)):((5,3),(4,4)):
+						((2,3),(3,4)):((2,4),(3,4)):((2,5),(3,4)):((3,5),(3,4)):((4,5),(3,4)):[]
+
+	{-((2,2),(3,3)):
 				 ((3,2),(3,3)):((3,2),(4,3)):
 				 ((4,2),(3,3)):((4,2),(4,3)):
 				 ((5,2),(4,3)):
@@ -69,29 +108,29 @@ initialPosRing = ((2,2),(3,3)):
 				 ((2,4),(3,4)):((2,4),(3,3)):
 				 ((2,3),(3,4)):((2,3),(3,3)):
 				 []
-
-initialBoard = B (array ((0,0),(size-1,size-1)) board) initialPosRing (2,2)
+	-}
+initialBoard = B initialTiles initialPositionRing (2,2) (-1,-1)
 
 ----------------------------------------------------------------------
---Board Manipulation: Flodding & Rotating -------------
-
+--Board Manipulation: Flipping & Rotating -------------
+----------------------------------------------------------------------
 {- take 3x3 board as an example
-row:
+row: convert the board from Board into [[Tile]] type
 row 	1 2 3	 1 2 3
 		4 5 6 => 4 5 6
 		7 8 9 	 7 8 9
 -}
 row :: Board -> [[Tile]]
-row (B b _ _) = [ [ b ! (x,y) | x <- [0..size-1]] | y <- [0..size-1] ] 
+row (B b _ _ _) = [ [ b ! (x,y) | x <- [0..size-1]] | y <- [0..size-1] ] 
 
 {- take 3x3 board as an example
-fold: fold the board along vertival line
-fold	1 2 3 	 3 2 1
+flip: flip the board horizontly
+flip	1 2 3 	 3 2 1
 		4 5 6 => 6 5 4
 		7 8 9    9 8 7
 -}
-fold :: [[Tile]] -> [[Tile]]
-fold = (map reverse) 
+flip :: [[Tile]] -> [[Tile]]
+flip = (map reverse) 
 
 {-
 rotate90: rotate the board clockwise 90'
@@ -168,24 +207,5 @@ fHb = flipH b
 fCb = flipC b
 fDb = flipD b
 -}
--- Board Checking: is symmetric (same before or after flodding and rotating) ----------------------
-isSymmetric :: Board -> Board -> Bool
-isSymmetric b1 b2 = elem (row b1) bs
-	where
-	bs = row b2 : rotate90 (row b2) : rotate180 (row b2) : rotate270 (row b2) :
-		 foldded : rotate90 foldded : rotate180 foldded : rotate270 foldded : []
-	foldded = fold (row b2)
--- testing:
-{-
-b = insertTile Black (0,1) initialBoard
-r = row b
-r1 = rotate90 r
-r2 = rotate180 r 
-r3 = rotate270 r
-f = fold r
-fr1 = rotate90 f 
-fr2 = rotate180 f
-fr3 = rotate270 f
--}
----------------------------------------------------------------------
+
 

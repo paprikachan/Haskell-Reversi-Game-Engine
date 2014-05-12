@@ -3,11 +3,11 @@
 <html>
 	<head>
 
-		<link rel="stylesheet" href="styles.css" />
+		<link rel="stylesheet" href="css/styles.css" />
 		
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-		<script src="test.js"></script>
-		<script src="action.js"></script>
+		<script src="js/update.js"></script>
+		<script src="js/action.js"></script>
 		<script>
 			$(document).ready(function(){
 				blankBoard();
@@ -22,7 +22,9 @@
 
 	<dev id='devOption'>
 		<button id = 'joinButton'>Join to Play</button>
-		<p id = "idP"></p>
+		<button id = 'endButton'>End Game</button>
+		<p id = "gameIdP"></p><br>
+		<p id = 'playerP'></p>
 	</dev>
 
 	<p id = 'pBoardTitle'>Click "New Game" to start!</p>

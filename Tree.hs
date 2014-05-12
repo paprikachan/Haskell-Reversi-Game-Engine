@@ -8,53 +8,57 @@ import Data.Array
 ---------------------------------------
 -- Game Tree Data
 ---------------------------------------
-data Eva = MINIMUM | EV Int | MAXIMUM | EMPTY deriving (Ord,Eq) -- the order thing
+--data EV = MINIMUM | EV Int | MAXIMUM | EMPTY deriving (Ord,Eq) -- the order thing
+type EV = Int 
 
-compareEva :: Eva -> Eva -> Int
-compareEva _ EMPTY = error "the snd eva is EMPTY"
-compareEva EMPTY _ = error "the fst eva is EMPTY"
-compareEva MAXIMUM _ = 1
-compareEva _ MAXIMUM = -1
-compareEva MINIMUM _ = -1
-compareEva _ MINIMUM = 1
-compareEva (EV x) (EV y)
+{- 	compareEV: compare two evaluation values, 
+	return 1 if the first one is larger,
+	return 0 if equal,
+	return -1 if the first one is smaller.
+	
+compareEV :: EV -> EV -> Int
+compareEV _ EMPTY = error "the snd evaluation value is EMPTY"
+compareEV EMPTY _ = error "the fst evaluation value is EMPTY"
+compareEV MAXIMUM _ = 1
+compareEV _ MAXIMUM = -1
+compareEV MINIMUM _ = -1
+compareEV _ MINIMUM = 1
+compareEV (EV x) (EV y)
 	| x > y = 1
 	| x == y = 0
 	| x < y = -1
 
-maxEva :: [Eva] -> Eva
-maxEva [] = error "Empty eva list in maxEva"
-maxEva (ev:evs) = case compareEva ev (maxEva evs) of 
+-- maxEV: return the maximum value from a list of evaluation values.
+maxEV :: [EV] -> EV
+maxEV [] = error "Empty eva list in maxEV"
+maxEV (ev:evs) = case compareEV ev (maxEV evs) of 
 					1 -> ev
 					0 -> ev
-					-1 -> (maxEva evs)
-
-minEva :: [Eva] -> Eva
-minEva [] = error "Empty eva list in minEva"
-minEva (ev:evs) = case compareEva ev (minEva evs) of
-					1 -> minEva evs
+					-1 -> (maxEV evs)
+-- minEV: return the minimum value from a list of evaluation values.
+minEV :: [EV] -> EV
+minEV [] = error "Empty eva list in minEV"
+minEV (ev:evs) = case compareEV ev (minEV evs) of
+					1 -> minEV evs
 					0 -> ev
 					-1 -> ev
+-}
 -- Int: is the evaluation value for the baord on that node
-data Tree a b = N a b [Tree a b]
-
-type MMT = Tree Board Eva
-
+data T b v = N b v [T b v]
+type Tree = T Board EV 
 type Depth = Int
 
 
 -- store valid next boards in the tree, remove the symmetric boards
+{-	constructTree: construct a game tree with specified depth
+	Inputs: current player, current board, look-ahead plies
+	Return: constructed game tree with initilised evaluation value 0 for each node.
+-}
+constructTree 								:: Tile -> Board -> Depth -> Tree
+constructTree t b 0						= N b 0 []
+constructTree t b d						= N b 0 [ constructTree (reversePlayer t) b (d-1) | b <- nextValidBoards t b ]
+	
 
-constructTree 								:: Tile -> Board -> Depth -> MMT
-constructTree t b 0							= N b (EV 0) []
-constructTree t b d							= N b (EV 0) [ constructTree (reversePlayer t) b' (d-1) | b' <- nextValidBoards t b ]
-	where 
-		nextValidBoards 					:: Tile -> Board -> [Board]
-		nextValidBoards t b 			 	= filterSymmetric [ move t p b | p <- nextMoves t b]
-		filterSymmetric 					:: [Board] -> [Board]
-		filterSymmetric [] 					= []
-		filterSymmetric (b:bs)				= b: filterSymmetric (filter ((== False) . isSymmetric b) bs) 
--- testing
 
 
 

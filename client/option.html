@@ -3,19 +3,25 @@
 	<head>
 		<link rel="stylesheet" href="css/styles.css" />
 		<link rel="stylesheet" href="css/home.css" />
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="js/sign.js"></script>
+		<script>
+			$(document).ready(function(){
+				welcome();
+			});
+		</script>
 	</head>
 
 	<body>
-		<br>
 		<p id="title">Online Reversi Game</p>
 
-		<img src="Board.jpg"></img>
+		<p id="welcome"></p>
 
-		<br><br><br>
-
+		<br>
 		<dev id = "link">		
-			<a href="signIn.html">Sign In</a>
-			<a href="signUp.html">Sign Up</a><br>
+			<a href="pvp.html">Person Vs Person Mode</a><br>
+			<a href="pvc.html">Person Vs Computer Mode</a><br>
+			<a href="test.html">Test Mode</a>
 		</dev>
 
 		<dev id = 'auth'>

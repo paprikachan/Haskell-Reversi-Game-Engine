@@ -1,8 +1,8 @@
 :not(canvas) {
 	font-family:Courier;
 	font-size: 98%;
- 	color: #ffffff;
-  	background: #000000;
+ 	color: #000000;
+  	background: #E0F8E0;
 }
 
 button,#simulation,#depth{
@@ -65,8 +65,5 @@ canvas{
 }
 
 #auth{
-	position:fixed;
-    bottom:10px;
-    left:50%;
-    margin-left:-50px; /*negative half the width */
+	text-align: center;
 }

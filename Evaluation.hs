@@ -8,14 +8,10 @@ module Evaluation where
 import Board
 import Tree
 
-
-
-evaluate :: (Tile -> Board -> Eva) -> Tile -> Board -> Eva
-evaluate f = f
-
 --Greedy Evaluation: Eve = Value (black counts - white counts)---------------------------- 
-greedy :: Tile -> Board -> Eva
-greedy Black (B _ _ (x,y)) = EV (x - y)
-greedy White (B _ _ (x,y)) = EV (y - x)
+-- greedy: generates a heuristic evaluation value using greedy algorithm for a given player and board.
+greedy :: Tile -> Board -> EV
+greedy Black (B _ _ (x,y) _) = (x - y)
+greedy White (B _ _ (x,y) _) = (y - x)
 
 ------------------------------------------------------------------------------------------ 

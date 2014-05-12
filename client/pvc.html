@@ -3,11 +3,12 @@
 <html>
 	<head>
 
-		<link rel="stylesheet" href="styles.css" />
+		<link rel="stylesheet" href="css/styles.css" />
 		
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-		<script src="test.js"></script>
-		<script src="action.js"></script>
+		<script src="js/update.js"></script>
+		<script src="js/action.js"></script>
+		<script src="js/API.js"></script>
 		<script>
 			$(document).ready(function(){
 				blankBoard();
@@ -22,17 +23,20 @@
 	<dev id='devOption'>
 		
 		<button id = 'playButton'>Play</button>
-		<p id = "idP"></p>
+		<button id = 'endButton'>End Game</button>
+		<p id = "gameIdP"></p><br>
+		<p id = "playerP"></p>
 
 		<form action="">
-		<input type="radio" name="AI" value="mc" checked>Monte Carlo AI Player</input>
+		<input type="radio" name="AI" value="mc" checked>Monte Carlo AI Player</input><br>
+		Simulation Times:
 		<input id = 'simulation' type='text' value='5'></input> 
 		<br>
-		<input type="radio" name="AI" value="tr">Traditional AI Player</input>
+		<input type="radio" name="AI" value="tr">Traditional AI Player</input><br>
+		Search Tree Depth:
 		<input id = 'depth' type='text' value='3'></input> 
 		<p>Evaluation</p>
 			<input type="radio" name="evaluation" value="greedy" checked>Greedy Alogirhm<br>
-			<input type="radio" name="evaluation" value="positional">Positional Strategy
 		<p>Search</p>
 			<input type="radio" name="search" value="minimax" checked>MiniMax<br>
 			<input type="radio" name="search" value="alphabeta">Alpha-Beta Pruning
